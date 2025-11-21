@@ -4,10 +4,10 @@ export const GhibliShader = {
   uniforms: {
     colorMap: {
       value: [
-        new Color("#427062"),
-        new Color("#33594E"),
-        new Color("#234549"),
-        new Color("#1E363F"),
+        new Color("#7FD99F"),  // Bright light green
+        new Color("#5FB584"),  // Medium light green
+        new Color("#4A9B6F"),  // Medium green
+        new Color("#3A8A5F"),  // Lighter dark green
       ],
     },
     brightnessThresholds: {
