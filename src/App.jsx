@@ -1,6 +1,6 @@
 import React, { useEffect, Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Stats } from '@react-three/drei';
 import * as THREE from 'three';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
@@ -38,6 +38,9 @@ function Scene({ cameraAnimationStart, onCameraAnimationComplete, onShowLoveText
 
   return (
     <>
+      {/* Debug Stats */}
+      <Stats />
+
       {/* Camera Animation */}
       <CameraAnimation shouldStart={cameraAnimationStart} onComplete={onCameraAnimationComplete} />
 
@@ -125,15 +128,17 @@ function App() {
           />
         </Suspense>
         <OrbitControls
-          target={[1, 2, 1]}
+          target={[1, 1.5, 1]}
           enableDamping
-          dampingFactor={0.1}
-          minDistance={3}
-          maxDistance={10}
-          maxPolarAngle={Math.PI / 2}
-          minAzimuthAngle={-Math.PI / 2}
-          maxAzimuthAngle={Math.PI / 2}
-          enablePan={false}
+          dampingFactor={0.05}
+          minDistance={4}
+          maxDistance={15}
+          maxPolarAngle={Math.PI / 2.2}
+          minPolarAngle={Math.PI / 6}
+          enablePan={true}
+          panSpeed={0.5}
+          rotateSpeed={0.8}
+          zoomSpeed={0.8}
           enabled={cameraAnimationComplete}
         />
       </Canvas>
