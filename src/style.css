@@ -13,19 +13,19 @@
     --perspective: 500;
     --size: 50;
     --ease: cubic-bezier(1, -0.52, 0.26, 0.89);
-    --bg: hsl(179, 80%, 64%); /* Light green background */
-    --panel: hsl(0, 100%, 80%); /* Light red panels */
-    --color: hsl(0, 0%, 5%);
-    --hue: 0; /* Red hue */
-    --saturation: 100;
-    --lightness: 55;
+    --bg: linear-gradient(180deg, #1a2a4a 0%, #ff9966 100%); /* Beautiful twilight gradient */
+    --panel: hsl(210, 90%, 70%); /* Soft winter blue panels */
+    --color: hsl(0, 0%, 98%);
+    --hue: 210; /* Blue hue */
+    --saturation: 90;
+    --lightness: 70;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: hsl(204, 57%, 43%);
-        --panel: hsl(35, 100%, 30%);
-        --color: hsl(0, 0%, 95%);
+        --bg: linear-gradient(180deg, #0d1b2a 0%, #ff7733 100%);
+        --panel: hsl(210, 80%, 60%);
+        --color: hsl(0, 0%, 98%);
     }
 }
 

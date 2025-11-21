@@ -2,10 +2,10 @@ import * as THREE from 'three';
 
 export const SkyboxShader = {
   uniforms: {
-    topColor: { value: new THREE.Color(0x87CEEB) }, // Light blue color
-    bottomColor: { value: new THREE.Color(0xFFFFFF) }, // White color
+    topColor: { value: new THREE.Color(0x87CEEB) }, // Deep twilight blue
+    bottomColor: { value: new THREE.Color(0xff9966) }, // Warm golden orange
     offset: { value: 33 },
-    exponent: { value: 0.6 }
+    exponent: { value: 0.8 }
   },
   vertexShader: /* glsl */ `
     varying vec3 vWorldPosition;
