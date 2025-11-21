@@ -92,7 +92,7 @@ function App() {
     <div style={{ width: '100vw', height: '100vh' }}>
       <Canvas
         shadows
-        camera={{ position: [2, 1, 6], fov: 65, near: 1, far: 50 }}
+        camera={{ position: [2, 0.5, 7], fov: 90, near: 1, far: 80 }}
         gl={{
           shadowMap: {
             enabled: true,
@@ -107,7 +107,7 @@ function App() {
           <Scene />
         </Suspense>
         <OrbitControls
-          target={[1, 0.5, 1]}
+          target={[1, 2, 1]}
           enableDamping
           dampingFactor={0.1}
           minDistance={3}

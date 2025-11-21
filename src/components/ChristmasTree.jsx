@@ -1,15 +1,15 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations, PositionalAudio } from '@react-three/drei';
-import * as THREE from 'three';
-import { GhibliShader } from '../GhibliShader.js';
-import { createToonShader } from '../ToonShader.js';
-import { StarShader } from '../StarShader.js';
+import React, { useRef, useState, useMemo, useEffect } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useGLTF, useAnimations, PositionalAudio } from "@react-three/drei";
+import * as THREE from "three";
+import { GhibliShader } from "../GhibliShader.js";
+import { createToonShader } from "../ToonShader.js";
+import { StarShader } from "../StarShader.js";
 
 function ChristmasTree({ onClick }) {
   const groupRef = useRef();
   const audioRef = useRef();
-  const gltf = useGLTF('/models/christmas-tree/christmas_tree_2.glb');
+  const gltf = useGLTF("/models/christmas-tree/christmas_tree_2.glb");
   const { actions, mixer } = useAnimations(gltf.animations, groupRef);
 
   const [isAnimating, setIsAnimating] = useState(false);
@@ -20,7 +20,7 @@ function ChristmasTree({ onClick }) {
     return new THREE.ShaderMaterial({
       vertexShader: GhibliShader.vertexShader,
       fragmentShader: GhibliShader.fragmentShader,
-      uniforms: THREE.UniformsUtils.clone(GhibliShader.uniforms)
+      uniforms: THREE.UniformsUtils.clone(GhibliShader.uniforms),
     });
   }, []);
 
@@ -28,7 +28,7 @@ function ChristmasTree({ onClick }) {
     return new THREE.ShaderMaterial({
       vertexShader: StarShader.vertexShader,
       fragmentShader: StarShader.fragmentShader,
-      uniforms: THREE.UniformsUtils.clone(StarShader.uniforms)
+      uniforms: THREE.UniformsUtils.clone(StarShader.uniforms),
     });
   }, []);
 
@@ -36,14 +36,14 @@ function ChristmasTree({ onClick }) {
     // Apply shaders to tree
     gltf.scene.traverse((child) => {
       if (child.isMesh) {
-        if (child.name === 'model_default_0') {
+        if (child.name === "model_default_0") {
           child.material = treeShaderMaterial;
-        } else if (child.name.startsWith('Sphere')) {
+        } else if (child.name.startsWith("Sphere")) {
           const toonShader = createToonShader();
           const decorationShaderMaterial = new THREE.ShaderMaterial({
             vertexShader: toonShader.vertexShader,
             fragmentShader: toonShader.fragmentShader,
-            uniforms: THREE.UniformsUtils.clone(toonShader.uniforms)
+            uniforms: THREE.UniformsUtils.clone(toonShader.uniforms),
           });
           child.material = decorationShaderMaterial;
         }
@@ -63,40 +63,6 @@ function ChristmasTree({ onClick }) {
         action.paused = true;
       }
     }
-  }, [actions]);
-
-  // Cleanup on unmount (reset when refresh)
-  useEffect(() => {
-    return () => {
-      console.log('Cleaning up on unmount...');
-
-      // Stop and reset audio
-      if (audioRef.current) {
-        try {
-          if (audioRef.current.isPlaying) {
-            audioRef.current.pause();
-          }
-          // Reset audio to beginning
-          if (audioRef.current.source) {
-            audioRef.current.source.offset = 0;
-          }
-        } catch (error) {
-          console.log('Audio cleanup error:', error);
-        }
-      }
-
-      // Stop animation
-      if (actions && Object.keys(actions).length > 0) {
-        const action = Object.values(actions)[0];
-        if (action) {
-          action.stop();
-        }
-      }
-
-      // Reset states
-      setAudioLoaded(false);
-      setIsAnimating(false);
-    };
   }, [actions]);
 
   const toggleAnimation = () => {
@@ -126,7 +92,7 @@ function ChristmasTree({ onClick }) {
             }
           }
         } catch (error) {
-          console.log('Audio toggle error:', error);
+          console.log("Audio toggle error:", error);
         }
       }
 
@@ -134,38 +100,48 @@ function ChristmasTree({ onClick }) {
     });
   };
 
-  // Auto-trigger animation and audio on start
+  // Auto-trigger animation and audio on start - auto click after 2s
   useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) return;
-    if (!audioLoaded) return;
+    const timer = setTimeout(async () => {
+      console.log("Auto-starting animation and audio after 2 seconds...");
 
-    const timer = setTimeout(() => {
-      console.log('Auto-starting animation and audio...');
-
-      // Manually start animation
+      // Start animation
       setIsAnimating(true);
-
       const action = Object.values(actions)[0];
       if (action) {
         action.paused = false;
         action.play();
-        console.log('Animation started');
+        console.log("Animation started automatically");
       }
 
       // Start audio
       if (audioRef.current) {
         try {
-          console.log('Audio ref:', audioRef.current);
-          audioRef.current.play();
-          console.log('Audio started');
+          console.log("Attempting to start audio...");
+          await audioRef.current.play();
+          console.log("Audio started successfully");
         } catch (error) {
-          console.error('Auto-play audio error:', error);
+          console.warn("Auto-play audio blocked:", error);
+
+          // Add click listener to start on first user interaction
+          const startOnClick = async () => {
+            try {
+              if (audioRef.current && !audioRef.current.isPlaying) {
+                await audioRef.current.play();
+                console.log("Audio started after user click");
+              }
+            } catch (e) {
+              console.error("Error starting audio on click:", e);
+            }
+            document.removeEventListener("click", startOnClick);
+          };
+          document.addEventListener("click", startOnClick, { once: true });
         }
       }
-    }, 1000);
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [actions, audioLoaded]);
+  }, [actions, audioLoaded, isAnimating]);
 
   const handleClick = (event) => {
     event.stopPropagation();
@@ -179,13 +155,10 @@ function ChristmasTree({ onClick }) {
 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
-      <primitive object={gltf.scene} scale={0.8} onClick={handleClick} />
+      <primitive object={gltf.scene} scale={1} onClick={handleClick} />
 
       {/* Star on top of the tree */}
-      <mesh
-        material={starMaterial}
-        position={[0, treeHeight + 0.1, 0]}
-      >
+      <mesh material={starMaterial} position={[0, treeHeight + 0.1, 0]}>
         <octahedronGeometry args={[0.1, 0]} />
       </mesh>
 
@@ -196,7 +169,7 @@ function ChristmasTree({ onClick }) {
         distance={10}
         loop
         onLoad={() => {
-          console.log('Audio loaded successfully');
+          console.log("Audio loaded successfully");
           setAudioLoaded(true);
         }}
       />
@@ -206,4 +179,4 @@ function ChristmasTree({ onClick }) {
 
 export default ChristmasTree;
 
-useGLTF.preload('/models/christmas-tree/christmas_tree_2.glb');
+useGLTF.preload("/models/christmas-tree/christmas_tree_2.glb");

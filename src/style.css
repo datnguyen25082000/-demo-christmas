@@ -11,7 +11,7 @@
     --duration: calc((var(--movement) * (1 / var(--stop))));
     --stagger: 0.1125;
     --perspective: 500;
-    --size: 50;
+    --size: 35;
     --ease: cubic-bezier(1, -0.52, 0.26, 0.89);
     --bg: linear-gradient(180deg, #1a2a4a 0%, #ff9966 100%); /* Beautiful twilight gradient */
     --panel: hsl(210, 90%, 70%); /* Soft winter blue panels */

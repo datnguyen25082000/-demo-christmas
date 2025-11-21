@@ -5,7 +5,7 @@ import { SnowParticleShader } from '../SnowParticleShader.js';
 
 function Particles() {
   const pointsRef = useRef();
-  const particleCount = 100000;
+  const particleCount = 7000;
 
   const particlePositions = useMemo(() => {
     const positions = new Float32Array(particleCount * 3);
