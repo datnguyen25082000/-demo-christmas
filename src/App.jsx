@@ -92,7 +92,7 @@ function App() {
     <div style={{ width: '100vw', height: '100vh' }}>
       <Canvas
         shadows
-        camera={{ position: [2, 0.5, 7], fov: 90, near: 1, far: 80 }}
+        camera={{ position: [1, 0.5, 7], fov: 90, near: 1, far: 80 }}
         gl={{
           shadowMap: {
             enabled: true,

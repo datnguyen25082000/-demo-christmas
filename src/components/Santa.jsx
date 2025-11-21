@@ -47,31 +47,37 @@ function Santa({ onClick }) {
           };
 
           // Apply colors based on mesh names
-          if (meshName.includes("root0")) {
-            applyColor(0xFFFAFA); // mặt
-          } else if (meshName.includes("root1")) {
-            applyColor(0xFFFAFA); // thân
-          } else if (meshName.includes("root2")) {
-            applyColor(0xBFBFBF); // tay
-          } else if (meshName.includes("root3")) {
-            applyColor(0xBFBFBF); // nơ
-          } else if (meshName.includes("root4")) {
-            applyColor(0xE88989); // túi
-          } else if (meshName.includes("root5")) {
+          if (meshName === "root000") {
+            applyColor(0xfffafa); //
+          } else if (meshName === "root001") {
+            applyColor(0x000000); // chân
+          } else if (meshName === "root01") {
+            applyColor(0x000000); // mặt
+          } else if (meshName === "root02") {
+            applyColor(0x000000); // mặt
+          } else if (meshName === "root2") {
+            applyColor(0xf542a4); // dép
+          } else if (meshName === "root03") {
+            applyColor(0x000000); // mặt
+          } else if (meshName === "root3") {
             applyColor(0x000000); // tai
-          } else if (meshName.includes("root6")) {
-            applyColor(0x000000); // tai trái
-          } else if (meshName.includes("root7")) {
-            applyColor(0x000000); // dây cổ
-          } else if (meshName.includes("root8")) {
-            applyColor(0xFFFAFA); // kem
-          } else if (meshName.includes("root9")) {
-            applyColor(0xFFFAFA); // chân
-          } else if (meshName.includes("root10")) {
-            applyColor(0xf5868e); //
+          } else if (meshName === "root4") {
+            applyColor(0x000000); // tai
+          } else if (meshName === "root5") {
+            applyColor(0x000000); //
+          } else if (meshName === "root6") {
+            applyColor(0x000000); //
+          } else if (meshName === "root10") {
+            applyColor(0xfffafa); // thân
+          } else if (meshName === "root11") {
+            applyColor(0x000000); //
+          } else if (meshName === "root12") {
+            applyColor(0x000000); // nơ
+          } else if (meshName === "root13") {
+            applyColor(0x000000); // nơ
           } else {
             // Default color - apply red for Santa
-            applyColor(0xFFFAFA);
+            applyColor(0xfffafa);
           }
         }
       });
@@ -171,7 +177,7 @@ function Santa({ onClick }) {
   });
 
   return (
-    <group ref={groupRef} position={[1.5, 0.1, 1.2]} scale={[12, 12, 12]}>
+    <group ref={groupRef} position={[2, 0.1, 1.2]} scale={[12, 12, 12]}>
       <primitive object={gltf.scene} onClick={handleClick} />
       {isLit && (
         <pointLight
