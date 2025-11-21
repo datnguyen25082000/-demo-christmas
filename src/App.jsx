@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, Suspense } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
+import React, { useEffect, Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
@@ -20,22 +20,7 @@ import ToyCars from './components/ToyCar.jsx';
 import Gifts from './components/Gift.jsx';
 import ChristmasTree from './components/ChristmasTree.jsx';
 import Text from './components/Text.jsx';
-
-// Component to add AudioListener to camera for PositionalAudio
-function AudioListenerComponent() {
-  const { camera } = useThree();
-
-  useEffect(() => {
-    const listener = new THREE.AudioListener();
-    camera.add(listener);
-
-    return () => {
-      camera.remove(listener);
-    };
-  }, [camera]);
-
-  return null;
-}
+import BackgroundMusic from './components/BackgroundMusic.jsx';
 
 function Scene() {
   useEffect(() => {
@@ -51,9 +36,6 @@ function Scene() {
 
   return (
     <>
-      {/* Add AudioListener to camera and auto-play background music */}
-      <AudioListenerComponent />
-
       {/* Lighting */}
       <Lights />
 
@@ -90,6 +72,9 @@ function LoadingFallback() {
 function App() {
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
+      {/* Background music component - plays automatically */}
+      <BackgroundMusic />
+
       <Canvas
         shadows
         camera={{ position: [1, 0.5, 7], fov: 90, near: 1, far: 80 }}

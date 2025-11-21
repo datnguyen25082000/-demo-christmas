@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF, useAnimations, PositionalAudio } from "@react-three/drei";
+import { useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 import { GhibliShader } from "../GhibliShader.js";
 import { createToonShader } from "../ToonShader.js";
@@ -8,13 +8,11 @@ import { StarShader } from "../StarShader.js";
 
 function ChristmasTree({ onClick }) {
   const groupRef = useRef();
-  const audioRef = useRef();
   const gltf = useGLTF("/models/christmas-tree/christmas_tree_2.glb");
   const { actions, mixer } = useAnimations(gltf.animations, groupRef);
 
   const [isAnimating, setIsAnimating] = useState(false);
   const [treeHeight, setTreeHeight] = useState(0);
-  const [audioLoaded, setAudioLoaded] = useState(false);
 
   const treeShaderMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
@@ -79,31 +77,14 @@ function ChristmasTree({ onClick }) {
         }
       }
 
-      // Toggle audio
-      if (audioRef.current) {
-        try {
-          if (newState) {
-            if (!audioRef.current.isPlaying) {
-              audioRef.current.play();
-            }
-          } else {
-            if (audioRef.current.isPlaying) {
-              audioRef.current.pause();
-            }
-          }
-        } catch (error) {
-          console.log("Audio toggle error:", error);
-        }
-      }
-
       return newState;
     });
   };
 
-  // Auto-trigger animation and audio on start - auto click after 2s
+  // Auto-trigger animation on start - auto click after 2s
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      console.log("Auto-starting animation and audio after 2 seconds...");
+    const timer = setTimeout(() => {
+      console.log("Auto-starting animation after 2 seconds...");
 
       // Start animation
       setIsAnimating(true);
@@ -113,35 +94,10 @@ function ChristmasTree({ onClick }) {
         action.play();
         console.log("Animation started automatically");
       }
-
-      // Start audio
-      if (audioRef.current) {
-        try {
-          console.log("Attempting to start audio...");
-          await audioRef.current.play();
-          console.log("Audio started successfully");
-        } catch (error) {
-          console.warn("Auto-play audio blocked:", error);
-
-          // Add click listener to start on first user interaction
-          const startOnClick = async () => {
-            try {
-              if (audioRef.current && !audioRef.current.isPlaying) {
-                await audioRef.current.play();
-                console.log("Audio started after user click");
-              }
-            } catch (e) {
-              console.error("Error starting audio on click:", e);
-            }
-            document.removeEventListener("click", startOnClick);
-          };
-          document.addEventListener("click", startOnClick, { once: true });
-        }
-      }
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [actions, audioLoaded, isAnimating]);
+  }, [actions]);
 
   const handleClick = (event) => {
     event.stopPropagation();
@@ -161,18 +117,6 @@ function ChristmasTree({ onClick }) {
       <mesh material={starMaterial} position={[0, treeHeight + 0.1, 0]}>
         <octahedronGeometry args={[0.1, 0]} />
       </mesh>
-
-      {/* Positional Audio */}
-      <PositionalAudio
-        ref={audioRef}
-        url="/audio/Happy_Little_Elves_Audionautix.mp3"
-        distance={10}
-        loop
-        onLoad={() => {
-          console.log("Audio loaded successfully");
-          setAudioLoaded(true);
-        }}
-      />
     </group>
   );
 }

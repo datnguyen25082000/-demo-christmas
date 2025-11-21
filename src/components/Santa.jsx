@@ -6,11 +6,16 @@ import * as THREE from "three";
 function Santa({ onClick }) {
   const groupRef = useRef();
   const lightRef = useRef();
+  const root2Ref = useRef();
+  const root2OriginalPos = useRef(null);
+  const root2TargetDirection = useRef(new THREE.Vector3());
   const gltf = useGLTF("/models/dudu/base.glb");
   const { actions, mixer } = useAnimations(gltf.animations, groupRef);
 
   const [isLit, setIsLit] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [root2AnimProgress, setRoot2AnimProgress] = useState(0);
+  const [root2IsAnimating, setRoot2IsAnimating] = useState(false);
 
   console.log("Santa component rendering, gltf:", gltf);
 
@@ -57,6 +62,11 @@ function Santa({ onClick }) {
             applyColor(0x000000); // mặt
           } else if (meshName === "root2") {
             applyColor(0xf542a4); // dép
+            // Store root2 reference and original position
+            root2Ref.current = child;
+            if (!root2OriginalPos.current) {
+              root2OriginalPos.current = child.position.clone();
+            }
           } else if (meshName === "root03") {
             applyColor(0x000000); // mặt
           } else if (meshName === "root3") {
@@ -164,16 +174,72 @@ function Santa({ onClick }) {
     }, 1000);
   };
 
+  const triggerRoot2Animation = (camera) => {
+    if (!root2IsAnimating && root2Ref.current) {
+      // Calculate direction from root2 to camera (center of view)
+      const root2WorldPos = new THREE.Vector3();
+      root2Ref.current.getWorldPosition(root2WorldPos);
+
+      const cameraPos = camera.position.clone();
+      const direction = new THREE.Vector3().subVectors(cameraPos, root2WorldPos).normalize();
+
+      root2TargetDirection.current = direction;
+      console.log('Direction to camera:', direction);
+
+      setRoot2IsAnimating(true);
+      setRoot2AnimProgress(0);
+    }
+  };
+
+  const cameraRef = useRef(null);
+
   const handleClick = (event) => {
     event.stopPropagation();
     console.log("Santa clicked");
     playAnimation();
     lightUp();
+    if (cameraRef.current) {
+      triggerRoot2Animation(cameraRef.current);
+    }
     if (onClick) onClick(event);
   };
 
   useFrame((state, delta) => {
+    // Store camera reference for click handler
+    cameraRef.current = state.camera;
+
     if (mixer) mixer.update(delta);
+
+    // Animate root2 mesh - move towards camera center (only when triggered)
+    if (root2IsAnimating && root2Ref.current && root2OriginalPos.current) {
+      const speed = 3.2; // Animation speed
+      const maxDistance = 0.4; // Maximum distance to move towards camera
+
+      // Update progress (0 to 2: 0-1 towards camera, 1-2 back to origin)
+      const newProgress = root2AnimProgress + delta * speed;
+
+      if (newProgress >= 2) {
+        // Animation complete - reset to origin
+        setRoot2AnimProgress(0);
+        setRoot2IsAnimating(false);
+        root2Ref.current.position.copy(root2OriginalPos.current);
+      } else {
+        setRoot2AnimProgress(newProgress);
+
+        // Calculate position based on progress
+        let easedProgress;
+        if (newProgress <= 1) {
+          // Towards camera phase (0 to 1)
+          easedProgress = Math.sin((newProgress / 2) * Math.PI);
+        }
+
+        // Move in the direction towards camera
+        const direction = root2TargetDirection.current;
+        root2Ref.current.position.x = root2OriginalPos.current.x + direction.x * easedProgress * maxDistance;
+        root2Ref.current.position.y = root2OriginalPos.current.y + direction.y * easedProgress * maxDistance;
+        root2Ref.current.position.z = root2OriginalPos.current.z + direction.z * easedProgress * maxDistance;
+      }
+    }
   });
 
   return (
