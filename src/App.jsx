@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect, Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -21,8 +21,9 @@ import Gifts from './components/Gift.jsx';
 import ChristmasTree from './components/ChristmasTree.jsx';
 import Text from './components/Text.jsx';
 import BackgroundMusic from './components/BackgroundMusic.jsx';
+import CameraAnimation from './components/CameraAnimation.jsx';
 
-function Scene() {
+function Scene({ cameraAnimationStart, onCameraAnimationComplete }) {
   useEffect(() => {
     // Hide loading screen when all components are loaded
     const loadingScreen = document.getElementById('loading-screen');
@@ -36,6 +37,9 @@ function Scene() {
 
   return (
     <>
+      {/* Camera Animation */}
+      <CameraAnimation shouldStart={cameraAnimationStart} onComplete={onCameraAnimationComplete} />
+
       {/* Lighting */}
       <Lights />
 
@@ -70,10 +74,22 @@ function LoadingFallback() {
 }
 
 function App() {
+  const [hasStarted, setHasStarted] = useState(false);
+  const [cameraAnimationComplete, setCameraAnimationComplete] = useState(false);
+
+  const handleStart = () => {
+    setHasStarted(true);
+  };
+
+  const handleCameraAnimationComplete = () => {
+    setCameraAnimationComplete(true);
+    console.log('Camera animation complete - enabling controls');
+  };
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      {/* Background music component - plays automatically */}
-      <BackgroundMusic />
+      {/* Background music component - shows button first */}
+      <BackgroundMusic onStart={handleStart} />
 
       <Canvas
         shadows
@@ -89,7 +105,7 @@ function App() {
         }}
       >
         <Suspense fallback={<LoadingFallback />}>
-          <Scene />
+          <Scene cameraAnimationStart={hasStarted} onCameraAnimationComplete={handleCameraAnimationComplete} />
         </Suspense>
         <OrbitControls
           target={[1, 2, 1]}
@@ -101,6 +117,7 @@ function App() {
           minAzimuthAngle={-Math.PI / 2}
           maxAzimuthAngle={Math.PI / 2}
           enablePan={false}
+          enabled={cameraAnimationComplete}
         />
       </Canvas>
     </div>

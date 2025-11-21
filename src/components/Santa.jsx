@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useCallback } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF, useAnimations } from "@react-three/drei";
+import { useGLTF, useAnimations, Text } from "@react-three/drei";
 import * as THREE from "three";
 
 function Santa({ onClick }) {
@@ -16,6 +16,7 @@ function Santa({ onClick }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [root2AnimProgress, setRoot2AnimProgress] = useState(0);
   const [root2IsAnimating, setRoot2IsAnimating] = useState(false);
+  const [showLoveText, setShowLoveText] = useState(false);
 
   console.log("Santa component rendering, gltf:", gltf);
 
@@ -181,10 +182,12 @@ function Santa({ onClick }) {
       root2Ref.current.getWorldPosition(root2WorldPos);
 
       const cameraPos = camera.position.clone();
-      const direction = new THREE.Vector3().subVectors(cameraPos, root2WorldPos).normalize();
+      const direction = new THREE.Vector3()
+        .subVectors(cameraPos, root2WorldPos)
+        .normalize();
 
       root2TargetDirection.current = direction;
-      console.log('Direction to camera:', direction);
+      console.log("Direction to camera:", direction);
 
       setRoot2IsAnimating(true);
       setRoot2AnimProgress(0);
@@ -212,8 +215,8 @@ function Santa({ onClick }) {
 
     // Animate root2 mesh - move towards camera center (only when triggered)
     if (root2IsAnimating && root2Ref.current && root2OriginalPos.current) {
-      const speed = 3.2; // Animation speed
-      const maxDistance = 0.4; // Maximum distance to move towards camera
+      const speed = 3; // Animation speed
+      const maxDistance = 0.8; // Maximum distance to move towards camera
 
       // Update progress (0 to 2: 0-1 towards camera, 1-2 back to origin)
       const newProgress = root2AnimProgress + delta * speed;
@@ -223,6 +226,14 @@ function Santa({ onClick }) {
         setRoot2AnimProgress(0);
         setRoot2IsAnimating(false);
         root2Ref.current.position.copy(root2OriginalPos.current);
+
+        // Show "I love you" text
+        setShowLoveText(true);
+
+        // Hide text after 3 seconds
+        setTimeout(() => {
+          setShowLoveText(false);
+        }, 1500);
       } else {
         setRoot2AnimProgress(newProgress);
 
@@ -235,9 +246,15 @@ function Santa({ onClick }) {
 
         // Move in the direction towards camera
         const direction = root2TargetDirection.current;
-        root2Ref.current.position.x = root2OriginalPos.current.x + direction.x * easedProgress * maxDistance;
-        root2Ref.current.position.y = root2OriginalPos.current.y + direction.y * easedProgress * maxDistance;
-        root2Ref.current.position.z = root2OriginalPos.current.z + direction.z * easedProgress * maxDistance;
+        root2Ref.current.position.x =
+          root2OriginalPos.current.x +
+          direction.x * easedProgress * maxDistance;
+        root2Ref.current.position.y =
+          root2OriginalPos.current.y +
+          direction.y * easedProgress * maxDistance;
+        root2Ref.current.position.z =
+          root2OriginalPos.current.z +
+          direction.z * easedProgress * maxDistance;
       }
     }
   });
@@ -253,6 +270,19 @@ function Santa({ onClick }) {
           distance={50}
           position={[0, 5, 0]}
         />
+      )}
+      {showLoveText && (
+        <Text
+          position={[0, 0.15, 0]}
+          fontSize={0.08}
+          color="#ff1493"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.005}
+          outlineColor="#ffffff"
+        >
+          ❤️Merry Xmas❤️
+        </Text>
       )}
     </group>
   );

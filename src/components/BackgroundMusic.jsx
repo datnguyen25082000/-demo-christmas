@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-function BackgroundMusic() {
+function BackgroundMusic({ onStart }) {
   const audioRef = useRef(null);
-  const [showPlayButton, setShowPlayButton] = useState(false);
+  const [showPlayButton, setShowPlayButton] = useState(true); // Always show initially
 
   useEffect(() => {
     // Create audio element
@@ -12,22 +12,8 @@ function BackgroundMusic() {
     audio.preload = 'auto';
     audioRef.current = audio;
 
-    // Try to autoplay after a short delay
-    const timer = setTimeout(async () => {
-      try {
-        console.log('Starting background music...');
-        await audio.play();
-        console.log('Background music started successfully');
-      } catch (error) {
-        console.warn('Autoplay blocked. Showing play button:', error);
-        // Show play button if autoplay is blocked
-        setShowPlayButton(true);
-      }
-    }, 1000);
-
     // Cleanup
     return () => {
-      clearTimeout(timer);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -42,6 +28,11 @@ function BackgroundMusic() {
         await audioRef.current.play();
         console.log('Background music started after user interaction');
         setShowPlayButton(false);
+
+        // Trigger camera animation and other start events
+        if (onStart) {
+          onStart();
+        }
       } catch (e) {
         console.error('Failed to start audio:', e);
       }
