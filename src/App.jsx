@@ -22,8 +22,9 @@ import ChristmasTree from './components/ChristmasTree.jsx';
 import Text from './components/Text.jsx';
 import BackgroundMusic from './components/BackgroundMusic.jsx';
 import CameraAnimation from './components/CameraAnimation.jsx';
+import LoveTextOverlay from './components/LoveTextOverlay.jsx';
 
-function Scene({ cameraAnimationStart, onCameraAnimationComplete }) {
+function Scene({ cameraAnimationStart, onCameraAnimationComplete, onShowLoveText }) {
   useEffect(() => {
     // Hide loading screen when all components are loaded
     const loadingScreen = document.getElementById('loading-screen');
@@ -53,7 +54,7 @@ function Scene({ cameraAnimationStart, onCameraAnimationComplete }) {
       {/* Interactive Objects wrapped in Suspense for loading */}
       <Suspense fallback={null}>
         <Train />
-        <Santa />
+        <Santa onShowLoveText={onShowLoveText} />
         <Snowmen />
         <ToyCars />
         <Gifts />
@@ -76,6 +77,7 @@ function LoadingFallback() {
 function App() {
   const [hasStarted, setHasStarted] = useState(false);
   const [cameraAnimationComplete, setCameraAnimationComplete] = useState(false);
+  const [showLoveText, setShowLoveText] = useState(false);
 
   const handleStart = () => {
     setHasStarted(true);
@@ -86,10 +88,21 @@ function App() {
     console.log('Camera animation complete - enabling controls');
   };
 
+  const handleShowLoveText = () => {
+    setShowLoveText(true);
+    // Hide after 3 seconds
+    setTimeout(() => {
+      setShowLoveText(false);
+    }, 3000);
+  };
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       {/* Background music component - shows button first */}
       <BackgroundMusic onStart={handleStart} />
+
+      {/* Love text overlay */}
+      <LoveTextOverlay show={showLoveText} />
 
       <Canvas
         shadows
@@ -105,7 +118,11 @@ function App() {
         }}
       >
         <Suspense fallback={<LoadingFallback />}>
-          <Scene cameraAnimationStart={hasStarted} onCameraAnimationComplete={handleCameraAnimationComplete} />
+          <Scene
+            cameraAnimationStart={hasStarted}
+            onCameraAnimationComplete={handleCameraAnimationComplete}
+            onShowLoveText={handleShowLoveText}
+          />
         </Suspense>
         <OrbitControls
           target={[1, 2, 1]}

@@ -1,9 +1,9 @@
 import React, { useRef, useState, useMemo, useCallback } from "react";
-import { useFrame } from "@react-three/fiber";
-import { useGLTF, useAnimations, Text } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useGLTF, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 
-function Santa({ onClick }) {
+function Santa({ onClick, onShowLoveText }) {
   const groupRef = useRef();
   const lightRef = useRef();
   const root2Ref = useRef();
@@ -16,7 +16,6 @@ function Santa({ onClick }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [root2AnimProgress, setRoot2AnimProgress] = useState(0);
   const [root2IsAnimating, setRoot2IsAnimating] = useState(false);
-  const [showLoveText, setShowLoveText] = useState(false);
 
   console.log("Santa component rendering, gltf:", gltf);
 
@@ -227,13 +226,10 @@ function Santa({ onClick }) {
         setRoot2IsAnimating(false);
         root2Ref.current.position.copy(root2OriginalPos.current);
 
-        // Show "I love you" text
-        setShowLoveText(true);
-
-        // Hide text after 3 seconds
-        setTimeout(() => {
-          setShowLoveText(false);
-        }, 1500);
+        // Show "Merry Xmas" text via callback
+        if (onShowLoveText) {
+          onShowLoveText();
+        }
       } else {
         setRoot2AnimProgress(newProgress);
 
@@ -270,19 +266,6 @@ function Santa({ onClick }) {
           distance={50}
           position={[0, 5, 0]}
         />
-      )}
-      {showLoveText && (
-        <Text
-          position={[0, 0.15, 0]}
-          fontSize={0.08}
-          color="#ff1493"
-          anchorX="center"
-          anchorY="middle"
-          outlineWidth={0.005}
-          outlineColor="#ffffff"
-        >
-          ❤️Merry Xmas❤️
-        </Text>
       )}
     </group>
   );
