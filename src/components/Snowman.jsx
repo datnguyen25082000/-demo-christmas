@@ -82,7 +82,7 @@ function Snowmen() {
   const positions = [
     { x: -1.5, z: 1.5 },
     { x: 1.5, z: -1.5 },
-    { x: -1.5, z: -1.5 }
+    { x: -1.5, z: -1.5 },
   ];
 
   return (

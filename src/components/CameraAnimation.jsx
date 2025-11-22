@@ -25,7 +25,6 @@ function CameraAnimation({ shouldStart, onComplete }) {
     if (shouldStart && !hasStarted.current) {
       isAnimating.current = true;
       hasStarted.current = true;
-      console.log('Camera animation started');
     }
   }, [shouldStart]);
 
@@ -50,9 +49,7 @@ function CameraAnimation({ shouldStart, onComplete }) {
     } else {
       // Smooth easing function (ease-in-out)
       const t = animationProgress.current;
-      const easedProgress = t < 0.5
-        ? 4 * t * t * t
-        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const easedProgress = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
       // Interpolate position
       camera.position.lerpVectors(startPosition, targetPosition, easedProgress);

@@ -84,7 +84,7 @@ function Gifts() {
   const positions = [
     { x: -2, z: 2 },
     { x: -2, z: -2 },
-    { x: 2, z: 2.2 }
+    { x: 2, z: 2.2 },
   ];
 
   return (

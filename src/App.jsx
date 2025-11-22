@@ -2,11 +2,6 @@ import React, { useEffect, Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stats } from '@react-three/drei';
 import * as THREE from 'three';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
-
-// Configure DRACO loader globally
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath('/draco/');
 
 // Import all React components
 import Lights from './components/Lights.jsx';
@@ -25,17 +20,6 @@ import CameraAnimation from './components/CameraAnimation.jsx';
 import LoveTextOverlay from './components/LoveTextOverlay.jsx';
 
 function Scene({ cameraAnimationStart, onCameraAnimationComplete, onShowLoveText }) {
-  useEffect(() => {
-    // Hide loading screen when all components are loaded
-    const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) {
-      const timer = setTimeout(() => {
-        loadingScreen.style.display = 'none';
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
   return (
     <>
       {/* Debug Stats */}
@@ -88,7 +72,6 @@ function App() {
 
   const handleCameraAnimationComplete = () => {
     setCameraAnimationComplete(true);
-    console.log('Camera animation complete - enabling controls');
   };
 
   const handleShowLoveText = () => {
@@ -101,20 +84,15 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      {/* Background music component - shows button first */}
-      <BackgroundMusic onStart={handleStart} />
-
-      {/* Love text overlay */}
-      <LoveTextOverlay show={showLoveText} />
-
+      {/* Canvas - always rendered for preview */}
       <Canvas
         shadows
         camera={{ position: [1, 0.5, 7], fov: 90, near: 1, far: 80 }}
         gl={{
           shadowMap: {
             enabled: true,
-            type: THREE.PCFSoftShadowMap
-          }
+            type: THREE.PCFSoftShadowMap,
+          },
         }}
         onCreated={({ gl }) => {
           gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -142,6 +120,12 @@ function App() {
           enabled={cameraAnimationComplete}
         />
       </Canvas>
+
+      {/* Background music with loading screen - overlays the canvas */}
+      <BackgroundMusic onStart={handleStart} />
+
+      {/* Love text overlay */}
+      <LoveTextOverlay show={showLoveText} />
     </div>
   );
 }

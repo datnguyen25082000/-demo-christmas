@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import * as THREE from 'three';
-import { SkyboxShader } from '../SkyboxShader.js';
+import { SkyboxShader } from '../shaders/SkyboxShader.js';
 
 function Skybox() {
   const material = useMemo(() => {
@@ -8,7 +8,7 @@ function Skybox() {
       vertexShader: SkyboxShader.vertexShader,
       fragmentShader: SkyboxShader.fragmentShader,
       uniforms: THREE.UniformsUtils.clone(SkyboxShader.uniforms),
-      side: THREE.BackSide
+      side: THREE.BackSide,
     });
   }, []);
 

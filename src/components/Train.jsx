@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -23,7 +23,7 @@ const FireShader = {
       vec3 reflection = vec3(1.0) * pow(max(dot(reflect(normalize(vPosition), vNormal), vec3(0.0, 0.0, 1.0)), 0.0), 5.0);
       gl_FragColor = vec4(glow + reflection, 1.0);
     }
-  `
+  `,
 };
 
 function Train({ onClick }) {
@@ -41,7 +41,7 @@ function Train({ onClick }) {
   const fireMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
       vertexShader: FireShader.vertexShader,
-      fragmentShader: FireShader.fragmentShader
+      fragmentShader: FireShader.fragmentShader,
     });
   }, []);
 
@@ -100,7 +100,7 @@ function Train({ onClick }) {
     if (!groupRef.current || !isAnimating) return;
 
     elapsedTimeRef.current += delta;
-    const angle = elapsedTimeRef.current * 0.70;
+    const angle = elapsedTimeRef.current * 0.7;
     groupRef.current.position.x = radius * Math.cos(angle);
     groupRef.current.position.z = radius * Math.sin(angle);
     groupRef.current.rotation.y = -angle - Math.PI / 2;
@@ -108,11 +108,7 @@ function Train({ onClick }) {
 
   return (
     <group ref={groupRef} position={[radius, 0.01, 0]} rotation-y={-Math.PI / 2}>
-      <primitive
-        object={gltf.scene}
-        scale={0.42}
-        onClick={handleClick}
-      />
+      <primitive object={gltf.scene} scale={0.42} onClick={handleClick} />
     </group>
   );
 }

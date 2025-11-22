@@ -1,7 +1,7 @@
-import React, { useRef, useState, useMemo, useCallback } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
-import { useGLTF, useAnimations } from "@react-three/drei";
-import * as THREE from "three";
+import React, { useRef, useState, useMemo, useCallback } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { useGLTF, useAnimations } from '@react-three/drei';
+import * as THREE from 'three';
 
 function Santa({ onClick, onShowLoveText }) {
   const groupRef = useRef();
@@ -9,7 +9,7 @@ function Santa({ onClick, onShowLoveText }) {
   const root2Ref = useRef();
   const root2OriginalPos = useRef(null);
   const root2TargetDirection = useRef(new THREE.Vector3());
-  const gltf = useGLTF("/models/dudu/base.glb");
+  const gltf = useGLTF('/models/dudu/base.glb');
   const { actions, mixer } = useAnimations(gltf.animations, groupRef);
 
   const [isLit, setIsLit] = useState(false);
@@ -17,15 +17,11 @@ function Santa({ onClick, onShowLoveText }) {
   const [root2AnimProgress, setRoot2AnimProgress] = useState(0);
   const [root2IsAnimating, setRoot2IsAnimating] = useState(false);
 
-  console.log("Santa component rendering, gltf:", gltf);
-
   // Apply colors to Santa model
   React.useEffect(() => {
     if (gltf.scene) {
       gltf.scene.traverse((child) => {
         if (child.isMesh) {
-          console.log("Mesh found:", child.name, "Type:", child.type);
-
           // Ensure material exists and clone it
           if (!child.material) {
             child.material = new THREE.MeshStandardMaterial();
@@ -36,7 +32,6 @@ function Santa({ onClick, onShowLoveText }) {
           }
 
           const meshName = child.name.toLowerCase();
-          console.log("Processing mesh:", meshName);
           const applyColor = (color) => {
             if (Array.isArray(child.material)) {
               child.material.forEach((mat) => {
@@ -52,38 +47,38 @@ function Santa({ onClick, onShowLoveText }) {
           };
 
           // Apply colors based on mesh names
-          if (meshName === "root000") {
+          if (meshName === 'root000') {
             applyColor(0xfffafa); //
-          } else if (meshName === "root001") {
+          } else if (meshName === 'root001') {
             applyColor(0x000000); // chân
-          } else if (meshName === "root01") {
+          } else if (meshName === 'root01') {
             applyColor(0x000000); // mặt
-          } else if (meshName === "root02") {
+          } else if (meshName === 'root02') {
             applyColor(0x000000); // mặt
-          } else if (meshName === "root2") {
+          } else if (meshName === 'root2') {
             applyColor(0xf542a4); // dép
             // Store root2 reference and original position
             root2Ref.current = child;
             if (!root2OriginalPos.current) {
               root2OriginalPos.current = child.position.clone();
             }
-          } else if (meshName === "root03") {
+          } else if (meshName === 'root03') {
             applyColor(0x000000); // mặt
-          } else if (meshName === "root3") {
+          } else if (meshName === 'root3') {
             applyColor(0x000000); // tai
-          } else if (meshName === "root4") {
+          } else if (meshName === 'root4') {
             applyColor(0x000000); // tai
-          } else if (meshName === "root5") {
+          } else if (meshName === 'root5') {
             applyColor(0x000000); //
-          } else if (meshName === "root6") {
+          } else if (meshName === 'root6') {
             applyColor(0x000000); //
-          } else if (meshName === "root10") {
+          } else if (meshName === 'root10') {
             applyColor(0xfffafa); // thân
-          } else if (meshName === "root11") {
+          } else if (meshName === 'root11') {
             applyColor(0x000000); //
-          } else if (meshName === "root12") {
+          } else if (meshName === 'root12') {
             applyColor(0x000000); // nơ
-          } else if (meshName === "root13") {
+          } else if (meshName === 'root13') {
             applyColor(0x000000); // nơ
           } else {
             // Default color - apply red for Santa
@@ -117,9 +112,9 @@ function Santa({ onClick, onShowLoveText }) {
         const onFinished = () => {
           action.paused = true;
           setIsAnimating(false);
-          mixer.removeEventListener("finished", onFinished);
+          mixer.removeEventListener('finished', onFinished);
         };
-        mixer.addEventListener("finished", onFinished);
+        mixer.addEventListener('finished', onFinished);
       }
     }
   }, [actions, isAnimating, mixer]);
@@ -181,13 +176,9 @@ function Santa({ onClick, onShowLoveText }) {
       root2Ref.current.getWorldPosition(root2WorldPos);
 
       const cameraPos = camera.position.clone();
-      const direction = new THREE.Vector3()
-        .subVectors(cameraPos, root2WorldPos)
-        .normalize();
+      const direction = new THREE.Vector3().subVectors(cameraPos, root2WorldPos).normalize();
 
       root2TargetDirection.current = direction;
-      console.log("Direction to camera:", direction);
-
       setRoot2IsAnimating(true);
       setRoot2AnimProgress(0);
     }
@@ -197,7 +188,6 @@ function Santa({ onClick, onShowLoveText }) {
 
   const handleClick = (event) => {
     event.stopPropagation();
-    console.log("Santa clicked");
     playAnimation();
     lightUp();
     if (cameraRef.current) {
@@ -243,14 +233,11 @@ function Santa({ onClick, onShowLoveText }) {
         // Move in the direction towards camera
         const direction = root2TargetDirection.current;
         root2Ref.current.position.x =
-          root2OriginalPos.current.x +
-          direction.x * easedProgress * maxDistance;
+          root2OriginalPos.current.x + direction.x * easedProgress * maxDistance;
         root2Ref.current.position.y =
-          root2OriginalPos.current.y +
-          direction.y * easedProgress * maxDistance;
+          root2OriginalPos.current.y + direction.y * easedProgress * maxDistance;
         root2Ref.current.position.z =
-          root2OriginalPos.current.z +
-          direction.z * easedProgress * maxDistance;
+          root2OriginalPos.current.z + direction.z * easedProgress * maxDistance;
       }
     }
   });
@@ -273,4 +260,4 @@ function Santa({ onClick, onShowLoveText }) {
 
 export default Santa;
 
-useGLTF.preload("/models/dudu/base.glb");
+useGLTF.preload('/models/dudu/base.glb');

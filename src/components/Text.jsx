@@ -1,22 +1,23 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
-import { extend } from '@react-three/fiber';
+import { extend, useFrame } from '@react-three/fiber';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import * as THREE from 'three';
-import { TextShader } from '../TextShader.js';
+import { TextShader } from '../shaders/TextShader.js';
 
 extend({ TextGeometry });
 
 function Text({ onClick }) {
   const meshRef = useRef();
   const [font, setFont] = useState(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const animationState = useRef({ isAnimating: false, progress: 0, isReversing: false });
+  const initialScale = useRef(new THREE.Vector3(1, 1, 1));
 
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
       vertexShader: TextShader.vertexShader,
       fragmentShader: TextShader.fragmentShader,
-      uniforms: THREE.UniformsUtils.clone(TextShader.uniforms)
+      uniforms: THREE.UniformsUtils.clone(TextShader.uniforms),
     });
   }, []);
 
@@ -27,47 +28,43 @@ function Text({ onClick }) {
     });
   }, []);
 
+  useFrame((state, delta) => {
+    if (!meshRef.current || !animationState.current.isAnimating) return;
+
+    const speed = 3; // Animation speed
+    const state_ = animationState.current;
+
+    if (!state_.isReversing) {
+      // Scale up phase
+      state_.progress += delta * speed;
+      if (state_.progress >= 1) {
+        state_.progress = 1;
+        state_.isReversing = true;
+      }
+    } else {
+      // Scale down phase
+      state_.progress -= delta * speed;
+      if (state_.progress <= 0) {
+        state_.progress = 0;
+        state_.isAnimating = false;
+        state_.isReversing = false;
+      }
+    }
+
+    // Apply scale with easing
+    const easedProgress = Math.sin((state_.progress * Math.PI) / 2);
+    const scale = 1 + easedProgress * 0.5; // Scale from 1 to 1.5
+    meshRef.current.scale.copy(initialScale.current).multiplyScalar(scale);
+  });
+
   const handleClick = (event) => {
     event.stopPropagation();
 
-    if (!meshRef.current || isAnimating) return;
+    if (!meshRef.current || animationState.current.isAnimating) return;
 
-    setIsAnimating(true);
-
-    const initialScale = meshRef.current.scale.clone();
-    const targetScale = initialScale.clone().multiplyScalar(1.5);
-    const duration = 500; // Duration in milliseconds
-    const startTime = performance.now();
-
-    const animateScale = (time) => {
-      const elapsedTime = time - startTime;
-      const progress = Math.min(elapsedTime / duration, 1);
-
-      // Interpolate scale
-      meshRef.current.scale.lerpVectors(initialScale, targetScale, progress);
-
-      if (progress < 1) {
-        requestAnimationFrame(animateScale);
-      } else {
-        // Reverse animation
-        const reverseStartTime = performance.now();
-        const reverseAnimate = (reverseTime) => {
-          const reverseElapsedTime = reverseTime - reverseStartTime;
-          const reverseProgress = Math.min(reverseElapsedTime / duration, 1);
-
-          meshRef.current.scale.lerpVectors(targetScale, initialScale, reverseProgress);
-
-          if (reverseProgress < 1) {
-            requestAnimationFrame(reverseAnimate);
-          } else {
-            setIsAnimating(false);
-          }
-        };
-        requestAnimationFrame(reverseAnimate);
-      }
-    };
-
-    requestAnimationFrame(animateScale);
+    animationState.current.isAnimating = true;
+    animationState.current.progress = 0;
+    animationState.current.isReversing = false;
 
     if (onClick) onClick(event);
   };
@@ -94,8 +91,8 @@ function Text({ onClick }) {
             bevelThickness: 0.03,
             bevelSize: 0.02,
             bevelOffset: 0,
-            bevelSegments: 5
-          }
+            bevelSegments: 5,
+          },
         ]}
         center
       />

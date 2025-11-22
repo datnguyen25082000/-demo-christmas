@@ -79,7 +79,7 @@ function ToyCars() {
   const positions = [
     { x: 0, z: 1.9 },
     { x: 0, z: -1.9 },
-    { x: 1.9, z: 0 }
+    { x: 1.9, z: 0 },
   ];
 
   return (

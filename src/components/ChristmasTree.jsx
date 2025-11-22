@@ -1,14 +1,14 @@
-import React, { useRef, useState, useMemo, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
-import { useGLTF, useAnimations } from "@react-three/drei";
-import * as THREE from "three";
-import { GhibliShader } from "../GhibliShader.js";
-import { createToonShader } from "../ToonShader.js";
-import { StarShader } from "../StarShader.js";
+import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { useGLTF, useAnimations } from '@react-three/drei';
+import * as THREE from 'three';
+import { GhibliShader } from '../shaders/GhibliShader.js';
+import { createToonShader } from '../shaders/ToonShader.js';
+import { StarShader } from '../shaders/StarShader.js';
 
 function ChristmasTree({ onClick }) {
   const groupRef = useRef();
-  const gltf = useGLTF("/models/christmas-tree/christmas_tree_2.glb");
+  const gltf = useGLTF('/models/christmas-tree/christmas_tree_2.glb');
   const { actions, mixer } = useAnimations(gltf.animations, groupRef);
 
   const [isAnimating, setIsAnimating] = useState(false);
@@ -34,9 +34,9 @@ function ChristmasTree({ onClick }) {
     // Apply shaders to tree
     gltf.scene.traverse((child) => {
       if (child.isMesh) {
-        if (child.name === "model_default_0") {
+        if (child.name === 'model_default_0') {
           child.material = treeShaderMaterial;
-        } else if (child.name.startsWith("Sphere")) {
+        } else if (child.name.startsWith('Sphere')) {
           const toonShader = createToonShader();
           const decorationShaderMaterial = new THREE.ShaderMaterial({
             vertexShader: toonShader.vertexShader,
@@ -84,15 +84,12 @@ function ChristmasTree({ onClick }) {
   // Auto-trigger animation on start - auto click after 2s
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log("Auto-starting animation after 2 seconds...");
-
       // Start animation
       setIsAnimating(true);
       const action = Object.values(actions)[0];
       if (action) {
         action.paused = false;
         action.play();
-        console.log("Animation started automatically");
       }
     }, 2000);
 
@@ -123,4 +120,4 @@ function ChristmasTree({ onClick }) {
 
 export default ChristmasTree;
 
-useGLTF.preload("/models/christmas-tree/christmas_tree_2.glb");
+useGLTF.preload('/models/christmas-tree/christmas_tree_2.glb');

@@ -1,7 +1,7 @@
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { SnowParticleShader } from '../SnowParticleShader.js';
+import { SnowParticleShader } from '../shaders/SnowParticleShader.js';
 
 function Particles() {
   const pointsRef = useRef();
@@ -24,11 +24,11 @@ function Particles() {
       uniforms: {
         color: { value: new THREE.Color(0xffffff) },
         size: { value: 0.04 * window.devicePixelRatio },
-        scale: { value: window.innerHeight / 2 }
+        scale: { value: window.innerHeight / 2 },
       },
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending
+      blending: THREE.AdditiveBlending,
     });
   }, []);
 

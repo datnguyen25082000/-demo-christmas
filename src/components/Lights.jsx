@@ -1,5 +1,21 @@
 import React from 'react';
-import * as THREE from 'three';
+
+const DIRECTIONAL_LIGHT_POSITIONS = [
+  [5, 10, 7.5],
+  [-5, 10, 7.5],
+  [5, 10, -7.5],
+  [-5, 10, -7.5],
+];
+
+const SHADOW_CONFIG = {
+  near: 0.1,
+  far: 25,
+  left: -10,
+  right: 10,
+  top: 10,
+  bottom: -10,
+  mapSize: 1024,
+};
 
 function Lights() {
   return (
@@ -11,61 +27,22 @@ function Lights() {
       <ambientLight intensity={3} color={0xffffff} />
 
       {/* Four directional lights positioned around the scene */}
-      <directionalLight
-        position={[5, 10, 7.5]}
-        intensity={1.3}
-        castShadow
-        shadow-camera-near={0.1}
-        shadow-camera-far={25}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
-
-      <directionalLight
-        position={[-5, 10, 7.5]}
-        intensity={1.3}
-        castShadow
-        shadow-camera-near={0.1}
-        shadow-camera-far={25}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
-
-      <directionalLight
-        position={[5, 10, -7.5]}
-        intensity={1.3}
-        castShadow
-        shadow-camera-near={0.1}
-        shadow-camera-far={25}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
-
-      <directionalLight
-        position={[-5, 10, -7.5]}
-        intensity={1.3}
-        castShadow
-        shadow-camera-near={0.1}
-        shadow-camera-far={25}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
+      {DIRECTIONAL_LIGHT_POSITIONS.map((position, index) => (
+        <directionalLight
+          key={index}
+          position={position}
+          intensity={1.3}
+          castShadow
+          shadow-camera-near={SHADOW_CONFIG.near}
+          shadow-camera-far={SHADOW_CONFIG.far}
+          shadow-camera-left={SHADOW_CONFIG.left}
+          shadow-camera-right={SHADOW_CONFIG.right}
+          shadow-camera-top={SHADOW_CONFIG.top}
+          shadow-camera-bottom={SHADOW_CONFIG.bottom}
+          shadow-mapSize-width={SHADOW_CONFIG.mapSize}
+          shadow-mapSize-height={SHADOW_CONFIG.mapSize}
+        />
+      ))}
     </>
   );
 }
