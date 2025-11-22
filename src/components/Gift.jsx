@@ -1,6 +1,11 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useGLTF, Clone } from '@react-three/drei';
 import * as THREE from 'three';
+
+const COLOR_TOGGLE_INTERVAL = 6000;
+const GIFT_SCALE = 0.7;
+const BASE_AUTO_TRIGGER_DELAY = 3000;
+const STAGGER_DELAY = 1500;
 
 function SingleGift({ position, autoTriggerDelay = 0 }) {
   const groupRef = useRef();
@@ -59,7 +64,7 @@ function SingleGift({ position, autoTriggerDelay = 0 }) {
       // Set up interval to repeat
       intervalId = setInterval(() => {
         toggleColor();
-      }, 6000); // Trigger every 6 seconds
+      }, COLOR_TOGGLE_INTERVAL);
     }, autoTriggerDelay);
 
     return () => {
@@ -75,25 +80,25 @@ function SingleGift({ position, autoTriggerDelay = 0 }) {
 
   return (
     <group ref={groupRef} position={position}>
-      <Clone object={gltf.scene} scale={0.7} onClick={handleClick} />
+      <Clone object={gltf.scene} scale={GIFT_SCALE} onClick={handleClick} />
     </group>
   );
 }
 
-function Gifts() {
-  const positions = [
-    { x: -2, z: 2 },
-    { x: -2, z: -2 },
-    { x: 2, z: 2.2 },
-  ];
+const GIFT_POSITIONS = [
+  { x: -2, z: 2 },
+  { x: -2, z: -2 },
+  { x: 2, z: 2.2 },
+];
 
+function Gifts() {
   return (
     <>
-      {positions.map((pos, index) => (
+      {GIFT_POSITIONS.map((pos, index) => (
         <SingleGift
           key={index}
           position={[pos.x, 0, pos.z]}
-          autoTriggerDelay={3000 + index * 1500} // Stagger each gift by 1.5 seconds
+          autoTriggerDelay={BASE_AUTO_TRIGGER_DELAY + index * STAGGER_DELAY}
         />
       ))}
     </>

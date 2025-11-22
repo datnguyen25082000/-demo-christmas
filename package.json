@@ -10,6 +10,7 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,css,html}\""
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
     "prettier": "^3.2.5",
     "vite": "^5.3.3",
     "vite-plugin-restart": "^0.4.1"

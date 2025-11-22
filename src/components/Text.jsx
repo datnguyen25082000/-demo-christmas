@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { useRef, useState, useMemo, useEffect, useCallback } from 'react';
 import { extend, useFrame } from '@react-three/fiber';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
@@ -6,6 +6,20 @@ import * as THREE from 'three';
 import { TextShader } from '../shaders/TextShader.js';
 
 extend({ TextGeometry });
+
+const TEXT_CONTENT = 'Merry Christmas';
+const TEXT_SIZE = 0.3;
+const TEXT_DEPTH = 0.2;
+const CURVE_SEGMENTS = 12;
+const BEVEL_THICKNESS = 0.03;
+const BEVEL_SIZE = 0.02;
+const BEVEL_OFFSET = 0;
+const BEVEL_SEGMENTS = 5;
+const ANIMATION_SPEED = 3;
+const SCALE_MULTIPLIER = 0.5;
+const TEXT_POSITION_Y = 0.3;
+const TEXT_ROTATION_Y = Math.PI * 0.5;
+const TEXT_POSITION_X = 1;
 
 function Text({ onClick }) {
   const meshRef = useRef();
@@ -31,19 +45,18 @@ function Text({ onClick }) {
   useFrame((state, delta) => {
     if (!meshRef.current || !animationState.current.isAnimating) return;
 
-    const speed = 3; // Animation speed
     const state_ = animationState.current;
 
     if (!state_.isReversing) {
       // Scale up phase
-      state_.progress += delta * speed;
+      state_.progress += delta * ANIMATION_SPEED;
       if (state_.progress >= 1) {
         state_.progress = 1;
         state_.isReversing = true;
       }
     } else {
       // Scale down phase
-      state_.progress -= delta * speed;
+      state_.progress -= delta * ANIMATION_SPEED;
       if (state_.progress <= 0) {
         state_.progress = 0;
         state_.isAnimating = false;
@@ -53,45 +66,48 @@ function Text({ onClick }) {
 
     // Apply scale with easing
     const easedProgress = Math.sin((state_.progress * Math.PI) / 2);
-    const scale = 1 + easedProgress * 0.5; // Scale from 1 to 1.5
+    const scale = 1 + easedProgress * SCALE_MULTIPLIER;
     meshRef.current.scale.copy(initialScale.current).multiplyScalar(scale);
   });
 
-  const handleClick = (event) => {
-    event.stopPropagation();
+  const handleClick = useCallback(
+    (event) => {
+      event.stopPropagation();
 
-    if (!meshRef.current || animationState.current.isAnimating) return;
+      if (!meshRef.current || animationState.current.isAnimating) return;
 
-    animationState.current.isAnimating = true;
-    animationState.current.progress = 0;
-    animationState.current.isReversing = false;
+      animationState.current.isAnimating = true;
+      animationState.current.progress = 0;
+      animationState.current.isReversing = false;
 
-    if (onClick) onClick(event);
-  };
+      if (onClick) onClick(event);
+    },
+    [onClick]
+  );
 
   if (!font) return null;
 
   return (
     <mesh
       ref={meshRef}
-      position={[1, 0.3, 0]}
-      rotation-y={Math.PI * 0.5}
+      position={[TEXT_POSITION_X, TEXT_POSITION_Y, 0]}
+      rotation-y={TEXT_ROTATION_Y}
       material={material}
       onClick={handleClick}
     >
       <textGeometry
         args={[
-          'Merry Christmas',
+          TEXT_CONTENT,
           {
             font: font,
-            size: 0.3,
-            depth: 0.2,
-            curveSegments: 12,
+            size: TEXT_SIZE,
+            depth: TEXT_DEPTH,
+            curveSegments: CURVE_SEGMENTS,
             bevelEnabled: true,
-            bevelThickness: 0.03,
-            bevelSize: 0.02,
-            bevelOffset: 0,
-            bevelSegments: 5,
+            bevelThickness: BEVEL_THICKNESS,
+            bevelSize: BEVEL_SIZE,
+            bevelOffset: BEVEL_OFFSET,
+            bevelSegments: BEVEL_SEGMENTS,
           },
         ]}
         center

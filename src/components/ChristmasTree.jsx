@@ -1,10 +1,15 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
 import { GhibliShader } from '../shaders/GhibliShader.js';
 import { createToonShader } from '../shaders/ToonShader.js';
 import { StarShader } from '../shaders/StarShader.js';
+
+const TREE_MODEL_NAME = 'model_default_0';
+const STAR_SIZE = 0.1;
+const STAR_OFFSET = 0.1;
+const AUTO_START_DELAY = 2000;
 
 function ChristmasTree({ onClick }) {
   const groupRef = useRef();
@@ -34,7 +39,7 @@ function ChristmasTree({ onClick }) {
     // Apply shaders to tree
     gltf.scene.traverse((child) => {
       if (child.isMesh) {
-        if (child.name === 'model_default_0') {
+        if (child.name === TREE_MODEL_NAME) {
           child.material = treeShaderMaterial;
         } else if (child.name.startsWith('Sphere')) {
           const toonShader = createToonShader();
@@ -81,17 +86,15 @@ function ChristmasTree({ onClick }) {
     });
   };
 
-  // Auto-trigger animation on start - auto click after 2s
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Start animation
       setIsAnimating(true);
       const action = Object.values(actions)[0];
       if (action) {
         action.paused = false;
         action.play();
       }
-    }, 2000);
+    }, AUTO_START_DELAY);
 
     return () => clearTimeout(timer);
   }, [actions]);
@@ -111,8 +114,8 @@ function ChristmasTree({ onClick }) {
       <primitive object={gltf.scene} scale={1} onClick={handleClick} />
 
       {/* Star on top of the tree */}
-      <mesh material={starMaterial} position={[0, treeHeight + 0.1, 0]}>
-        <octahedronGeometry args={[0.1, 0]} />
+      <mesh material={starMaterial} position={[0, treeHeight + STAR_OFFSET, 0]}>
+        <octahedronGeometry args={[STAR_SIZE, 0]} />
       </mesh>
     </group>
   );

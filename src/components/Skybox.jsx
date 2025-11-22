@@ -1,6 +1,8 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import { SkyboxShader } from '../shaders/SkyboxShader.js';
+
+const SKYBOX_SIZE = 20;
 
 function Skybox() {
   const material = useMemo(() => {
@@ -14,7 +16,7 @@ function Skybox() {
 
   return (
     <mesh material={material}>
-      <boxGeometry args={[20, 20, 20]} />
+      <boxGeometry args={[SKYBOX_SIZE, SKYBOX_SIZE, SKYBOX_SIZE]} />
     </mesh>
   );
 }

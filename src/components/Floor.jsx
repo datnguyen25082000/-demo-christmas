@@ -1,6 +1,10 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import * as THREE from 'three';
 import { SnowShader } from '../shaders/SnowShader.js';
+
+const FLOOR_SIZE = 20;
+const FLOOR_HEIGHT = 0.2;
+const FLOOR_Y_POSITION = -0.1;
 
 function Floor() {
   const material = useMemo(() => {
@@ -12,8 +16,8 @@ function Floor() {
   }, []);
 
   return (
-    <mesh position={[0, -0.1, 0]} receiveShadow material={material}>
-      <boxGeometry args={[20, 0.2, 20]} />
+    <mesh position={[0, FLOOR_Y_POSITION, 0]} receiveShadow material={material}>
+      <boxGeometry args={[FLOOR_SIZE, FLOOR_HEIGHT, FLOOR_SIZE]} />
     </mesh>
   );
 }

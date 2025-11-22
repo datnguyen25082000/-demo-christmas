@@ -1,7 +1,13 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
+
+const AUTO_START_DELAY = 2000;
+const ROTATION_SPEED = 0.7;
+const CIRCULAR_RADIUS = 4.4;
+const TRAIN_SCALE = 0.42;
+const INITIAL_ROTATION = -Math.PI / 2;
 
 const FireShader = {
   vertexShader: `
@@ -28,15 +34,14 @@ const FireShader = {
 
 function Train({ onClick }) {
   const groupRef = useRef();
+  const elapsedTimeRef = useRef(0);
+  const originalMaterialsRef = useRef([]);
+
   const gltf = useGLTF('/models/train/back_to_the_future_train_-_steam_locomotive.glb', '/draco/');
   const { actions } = useAnimations(gltf.animations, groupRef);
 
   const [isAnimating, setIsAnimating] = useState(false);
   const [isLit, setIsLit] = useState(false);
-  const elapsedTimeRef = useRef(0);
-  const radius = 4.4;
-
-  const originalMaterialsRef = useRef([]);
 
   const fireMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
@@ -54,11 +59,11 @@ function Train({ onClick }) {
       }
     });
 
-    // Auto-start after 2000ms
+    // Auto-start after delay
     const timer = setTimeout(() => {
       setIsAnimating(true);
       setIsLit(true);
-    }, 2000);
+    }, AUTO_START_DELAY);
 
     return () => clearTimeout(timer);
   }, [gltf.scene]);
@@ -89,26 +94,29 @@ function Train({ onClick }) {
     });
   }, [isLit, gltf.scene, fireMaterial]);
 
-  const handleClick = (event) => {
-    event.stopPropagation();
-    setIsAnimating((prev) => !prev);
-    setIsLit((prev) => !prev);
-    if (onClick) onClick(event);
-  };
+  const handleClick = useCallback(
+    (event) => {
+      event.stopPropagation();
+      setIsAnimating((prev) => !prev);
+      setIsLit((prev) => !prev);
+      if (onClick) onClick(event);
+    },
+    [onClick]
+  );
 
   useFrame((state, delta) => {
     if (!groupRef.current || !isAnimating) return;
 
     elapsedTimeRef.current += delta;
-    const angle = elapsedTimeRef.current * 0.7;
-    groupRef.current.position.x = radius * Math.cos(angle);
-    groupRef.current.position.z = radius * Math.sin(angle);
-    groupRef.current.rotation.y = -angle - Math.PI / 2;
+    const angle = elapsedTimeRef.current * ROTATION_SPEED;
+    groupRef.current.position.x = CIRCULAR_RADIUS * Math.cos(angle);
+    groupRef.current.position.z = CIRCULAR_RADIUS * Math.sin(angle);
+    groupRef.current.rotation.y = -angle + INITIAL_ROTATION;
   });
 
   return (
-    <group ref={groupRef} position={[radius, 0.01, 0]} rotation-y={-Math.PI / 2}>
-      <primitive object={gltf.scene} scale={0.42} onClick={handleClick} />
+    <group ref={groupRef} position={[CIRCULAR_RADIUS, 0.01, 0]} rotation-y={INITIAL_ROTATION}>
+      <primitive object={gltf.scene} scale={TRAIN_SCALE} onClick={handleClick} />
     </group>
   );
 }

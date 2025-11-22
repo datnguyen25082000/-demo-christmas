@@ -1,6 +1,4 @@
-import React from 'react';
-
-const OVERLAY_STYLES = {
+const OVERLAY_STYLE = {
   position: 'fixed',
   top: '50%',
   left: '50%',
@@ -29,7 +27,7 @@ function LoveTextOverlay({ show }) {
   if (!show) return null;
 
   return (
-    <div style={OVERLAY_STYLES}>
+    <div style={OVERLAY_STYLE}>
       ❤️ Merry Xmas ❤️
       <style>{KEYFRAMES}</style>
     </div>

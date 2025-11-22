@@ -1,7 +1,19 @@
-import React, { useRef, useState, useMemo, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations } from '@react-three/drei';
 import * as THREE from 'three';
+
+const COLOR_WHITE = 0xfffafa;
+const COLOR_BLACK = 0x000000;
+const COLOR_PINK = 0xf542a4;
+const EMISSIVE_COLOR = 0x0000ff;
+const EMISSIVE_INTENSITY = 2;
+const LIGHT_DURATION = 1000;
+const ANIMATION_INTERVAL = 8000;
+const INITIAL_ANIMATION_DELAY = 5000;
+const ANIMATION_SPEED = 3;
+const MAX_DISTANCE = 0.8;
+const SCALE_FACTOR = 12;
 
 function Santa({ onClick, onShowLoveText }) {
   const groupRef = useRef();
@@ -9,6 +21,8 @@ function Santa({ onClick, onShowLoveText }) {
   const root2Ref = useRef();
   const root2OriginalPos = useRef(null);
   const root2TargetDirection = useRef(new THREE.Vector3());
+  const cameraRef = useRef(null);
+
   const gltf = useGLTF('/models/dudu/base.glb');
   const { actions, mixer } = useAnimations(gltf.animations, groupRef);
 
@@ -18,7 +32,7 @@ function Santa({ onClick, onShowLoveText }) {
   const [root2IsAnimating, setRoot2IsAnimating] = useState(false);
 
   // Apply colors to Santa model
-  React.useEffect(() => {
+  useEffect(() => {
     if (gltf.scene) {
       gltf.scene.traverse((child) => {
         if (child.isMesh) {
@@ -47,49 +61,38 @@ function Santa({ onClick, onShowLoveText }) {
           };
 
           // Apply colors based on mesh names
-          if (meshName === 'root000') {
-            applyColor(0xfffafa); //
-          } else if (meshName === 'root001') {
-            applyColor(0x000000); // chân
-          } else if (meshName === 'root01') {
-            applyColor(0x000000); // mặt
-          } else if (meshName === 'root02') {
-            applyColor(0x000000); // mặt
+          if (meshName === 'root000' || meshName === 'root10') {
+            applyColor(COLOR_WHITE);
           } else if (meshName === 'root2') {
-            applyColor(0xf542a4); // dép
+            applyColor(COLOR_PINK);
             // Store root2 reference and original position
             root2Ref.current = child;
             if (!root2OriginalPos.current) {
               root2OriginalPos.current = child.position.clone();
             }
-          } else if (meshName === 'root03') {
-            applyColor(0x000000); // mặt
-          } else if (meshName === 'root3') {
-            applyColor(0x000000); // tai
-          } else if (meshName === 'root4') {
-            applyColor(0x000000); // tai
-          } else if (meshName === 'root5') {
-            applyColor(0x000000); //
-          } else if (meshName === 'root6') {
-            applyColor(0x000000); //
-          } else if (meshName === 'root10') {
-            applyColor(0xfffafa); // thân
-          } else if (meshName === 'root11') {
-            applyColor(0x000000); //
-          } else if (meshName === 'root12') {
-            applyColor(0x000000); // nơ
-          } else if (meshName === 'root13') {
-            applyColor(0x000000); // nơ
+          } else if (
+            meshName === 'root001' ||
+            meshName === 'root01' ||
+            meshName === 'root02' ||
+            meshName === 'root03' ||
+            meshName === 'root3' ||
+            meshName === 'root4' ||
+            meshName === 'root5' ||
+            meshName === 'root6' ||
+            meshName === 'root11' ||
+            meshName === 'root12' ||
+            meshName === 'root13'
+          ) {
+            applyColor(COLOR_BLACK);
           } else {
-            // Default color - apply red for Santa
-            applyColor(0xfffafa);
+            applyColor(COLOR_WHITE);
           }
         }
       });
     }
   }, [gltf]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (actions && Object.keys(actions).length > 0) {
       const action = Object.values(actions)[0];
       if (action) {
@@ -120,7 +123,7 @@ function Santa({ onClick, onShowLoveText }) {
   }, [actions, isAnimating, mixer]);
 
   // Auto-trigger animation at intervals
-  React.useEffect(() => {
+  useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
 
     let intervalId;
@@ -132,8 +135,8 @@ function Santa({ onClick, onShowLoveText }) {
       // Set up interval to repeat
       intervalId = setInterval(() => {
         playAnimation();
-      }, 8000); // Trigger every 8 seconds
-    }, 5000); // Start after 5 seconds
+      }, ANIMATION_INTERVAL);
+    }, INITIAL_ANIMATION_DELAY);
 
     return () => {
       clearTimeout(initialTimer);
@@ -141,17 +144,17 @@ function Santa({ onClick, onShowLoveText }) {
     };
   }, [actions, playAnimation]);
 
-  const lightUp = () => {
+  const lightUp = useCallback(() => {
     setIsLit(true);
 
     if (groupRef.current) {
       groupRef.current.traverse((child) => {
         if (child.isMesh && child.material) {
           if (!child.material.emissive) {
-            child.material.emissive = new THREE.Color(0x000000);
+            child.material.emissive = new THREE.Color(COLOR_BLACK);
           }
-          child.material.emissive.setHex(0x0000ff);
-          child.material.emissiveIntensity = 2;
+          child.material.emissive.setHex(EMISSIVE_COLOR);
+          child.material.emissiveIntensity = EMISSIVE_INTENSITY;
         }
       });
     }
@@ -160,41 +163,45 @@ function Santa({ onClick, onShowLoveText }) {
       if (groupRef.current) {
         groupRef.current.traverse((child) => {
           if (child.isMesh && child.material && child.material.emissive) {
-            child.material.emissive.setHex(0x000000);
+            child.material.emissive.setHex(COLOR_BLACK);
             child.material.emissiveIntensity = 0;
           }
         });
       }
       setIsLit(false);
-    }, 1000);
-  };
+    }, LIGHT_DURATION);
+  }, []);
 
-  const triggerRoot2Animation = (camera) => {
-    if (!root2IsAnimating && root2Ref.current) {
-      // Calculate direction from root2 to camera (center of view)
-      const root2WorldPos = new THREE.Vector3();
-      root2Ref.current.getWorldPosition(root2WorldPos);
+  const triggerRoot2Animation = useCallback(
+    (camera) => {
+      if (!root2IsAnimating && root2Ref.current) {
+        // Calculate direction from root2 to camera (center of view)
+        const root2WorldPos = new THREE.Vector3();
+        root2Ref.current.getWorldPosition(root2WorldPos);
 
-      const cameraPos = camera.position.clone();
-      const direction = new THREE.Vector3().subVectors(cameraPos, root2WorldPos).normalize();
+        const cameraPos = camera.position.clone();
+        const direction = new THREE.Vector3().subVectors(cameraPos, root2WorldPos).normalize();
 
-      root2TargetDirection.current = direction;
-      setRoot2IsAnimating(true);
-      setRoot2AnimProgress(0);
-    }
-  };
+        root2TargetDirection.current = direction;
+        setRoot2IsAnimating(true);
+        setRoot2AnimProgress(0);
+      }
+    },
+    [root2IsAnimating]
+  );
 
-  const cameraRef = useRef(null);
-
-  const handleClick = (event) => {
-    event.stopPropagation();
-    playAnimation();
-    lightUp();
-    if (cameraRef.current) {
-      triggerRoot2Animation(cameraRef.current);
-    }
-    if (onClick) onClick(event);
-  };
+  const handleClick = useCallback(
+    (event) => {
+      event.stopPropagation();
+      playAnimation();
+      lightUp();
+      if (cameraRef.current) {
+        triggerRoot2Animation(cameraRef.current);
+      }
+      if (onClick) onClick(event);
+    },
+    [playAnimation, lightUp, triggerRoot2Animation, onClick]
+  );
 
   useFrame((state, delta) => {
     // Store camera reference for click handler
@@ -204,11 +211,8 @@ function Santa({ onClick, onShowLoveText }) {
 
     // Animate root2 mesh - move towards camera center (only when triggered)
     if (root2IsAnimating && root2Ref.current && root2OriginalPos.current) {
-      const speed = 3; // Animation speed
-      const maxDistance = 0.8; // Maximum distance to move towards camera
-
       // Update progress (0 to 2: 0-1 towards camera, 1-2 back to origin)
-      const newProgress = root2AnimProgress + delta * speed;
+      const newProgress = root2AnimProgress + delta * ANIMATION_SPEED;
 
       if (newProgress >= 2) {
         // Animation complete - reset to origin
@@ -233,23 +237,27 @@ function Santa({ onClick, onShowLoveText }) {
         // Move in the direction towards camera
         const direction = root2TargetDirection.current;
         root2Ref.current.position.x =
-          root2OriginalPos.current.x + direction.x * easedProgress * maxDistance;
+          root2OriginalPos.current.x + direction.x * easedProgress * MAX_DISTANCE;
         root2Ref.current.position.y =
-          root2OriginalPos.current.y + direction.y * easedProgress * maxDistance;
+          root2OriginalPos.current.y + direction.y * easedProgress * MAX_DISTANCE;
         root2Ref.current.position.z =
-          root2OriginalPos.current.z + direction.z * easedProgress * maxDistance;
+          root2OriginalPos.current.z + direction.z * easedProgress * MAX_DISTANCE;
       }
     }
   });
 
   return (
-    <group ref={groupRef} position={[2, 0.1, 1.2]} scale={[12, 12, 12]}>
+    <group
+      ref={groupRef}
+      position={[2, 0.1, 1.2]}
+      scale={[SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR]}
+    >
       <primitive object={gltf.scene} onClick={handleClick} />
       {isLit && (
         <pointLight
           ref={lightRef}
-          color={0x0000ff}
-          intensity={2}
+          color={EMISSIVE_COLOR}
+          intensity={EMISSIVE_INTENSITY}
           distance={50}
           position={[0, 5, 0]}
         />

@@ -1,5 +1,3 @@
-import React from 'react';
-
 const DIRECTIONAL_LIGHT_POSITIONS = [
   [5, 10, 7.5],
   [-5, 10, 7.5],

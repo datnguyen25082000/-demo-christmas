@@ -1,4 +1,5 @@
 import restart from 'vite-plugin-restart'
+import react from '@vitejs/plugin-react'
 
 export default {
     root: 'src/', // Sources files (typically where index.html is)
@@ -16,6 +17,7 @@ export default {
     },
     plugins:
     [
+        react(), // Enable React with automatic JSX runtime
         restart({ restart: [ '../static/**', ] }) // Restart server on static file change
     ],
 }

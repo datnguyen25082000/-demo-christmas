@@ -1,18 +1,24 @@
-import React, { useRef, useMemo } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SnowParticleShader } from '../shaders/SnowParticleShader.js';
 
+const PARTICLE_COUNT = 7000;
+const PARTICLE_SIZE = 0.04;
+const PARTICLE_FALL_SPEED = 0.5;
+const PARTICLE_SPREAD = 20;
+const PARTICLE_MIN_Y = -10;
+const PARTICLE_MAX_Y = 20;
+
 function Particles() {
   const pointsRef = useRef();
-  const particleCount = 7000;
 
   const particlePositions = useMemo(() => {
-    const positions = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 20;
-      positions[i * 3 + 1] = Math.random() * 20;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * PARTICLE_SPREAD;
+      positions[i * 3 + 1] = Math.random() * PARTICLE_SPREAD;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * PARTICLE_SPREAD;
     }
     return positions;
   }, []);
@@ -23,7 +29,7 @@ function Particles() {
       fragmentShader: SnowParticleShader.fragmentShader,
       uniforms: {
         color: { value: new THREE.Color(0xffffff) },
-        size: { value: 0.04 * window.devicePixelRatio },
+        size: { value: PARTICLE_SIZE * window.devicePixelRatio },
         scale: { value: window.innerHeight / 2 },
       },
       transparent: true,
@@ -39,14 +45,14 @@ function Particles() {
 
     for (let i = 0; i < positions.length / 3; i++) {
       // Snow falls continuously
-      positions[i * 3 + 1] -= delta * 0.5;
+      positions[i * 3 + 1] -= delta * PARTICLE_FALL_SPEED;
 
       // Reset to top when it reaches the bottom for infinite snow effect
-      if (positions[i * 3 + 1] < -10) {
-        positions[i * 3 + 1] = 20;
+      if (positions[i * 3 + 1] < PARTICLE_MIN_Y) {
+        positions[i * 3 + 1] = PARTICLE_MAX_Y;
         // Randomize x and z positions slightly for more natural effect
-        positions[i * 3] = (Math.random() - 0.5) * 20;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+        positions[i * 3] = (Math.random() - 0.5) * PARTICLE_SPREAD;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * PARTICLE_SPREAD;
       }
     }
 
@@ -58,7 +64,7 @@ function Particles() {
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={particleCount}
+          count={PARTICLE_COUNT}
           array={particlePositions}
           itemSize={3}
         />

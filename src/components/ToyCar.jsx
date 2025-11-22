@@ -1,7 +1,13 @@
-import React, { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF, useAnimations, Clone } from '@react-three/drei';
 import * as THREE from 'three';
+
+const ANIMATION_INTERVAL = 5000;
+const ANIMATION_DURATION = 1000;
+const BASE_AUTO_TRIGGER_DELAY = 2000;
+const STAGGER_DELAY = 1000;
+const CAR_SCALE = 0.36;
 
 function SingleCar({ position, rotation, autoTriggerDelay = 0 }) {
   const groupRef = useRef();
@@ -10,7 +16,7 @@ function SingleCar({ position, rotation, autoTriggerDelay = 0 }) {
 
   const [isAnimating, setIsAnimating] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (actions && Object.keys(actions).length > 0) {
       const action = Object.values(actions)[0];
       if (action) {
@@ -32,13 +38,13 @@ function SingleCar({ position, rotation, autoTriggerDelay = 0 }) {
 
         setTimeout(() => {
           setIsAnimating(false);
-        }, 1000);
+        }, ANIMATION_DURATION);
       }
     }
   }, [actions, isAnimating]);
 
   // Auto-trigger animation at intervals
-  React.useEffect(() => {
+  useEffect(() => {
     if (!actions || Object.keys(actions).length === 0) return;
 
     let intervalId;
@@ -50,7 +56,7 @@ function SingleCar({ position, rotation, autoTriggerDelay = 0 }) {
       // Set up interval to repeat
       intervalId = setInterval(() => {
         playAnimation();
-      }, 5000); // Trigger every 5 seconds
+      }, ANIMATION_INTERVAL);
     }, autoTriggerDelay);
 
     return () => {
@@ -59,10 +65,13 @@ function SingleCar({ position, rotation, autoTriggerDelay = 0 }) {
     };
   }, [actions, autoTriggerDelay, playAnimation]);
 
-  const handleClick = (event) => {
-    event.stopPropagation();
-    playAnimation();
-  };
+  const handleClick = useCallback(
+    (event) => {
+      event.stopPropagation();
+      playAnimation();
+    },
+    [playAnimation]
+  );
 
   useFrame((state, delta) => {
     if (mixer) mixer.update(delta);
@@ -70,26 +79,26 @@ function SingleCar({ position, rotation, autoTriggerDelay = 0 }) {
 
   return (
     <group ref={groupRef} position={position} rotation={rotation}>
-      <Clone object={gltf.scene} scale={0.36} onClick={handleClick} />
+      <Clone object={gltf.scene} scale={CAR_SCALE} onClick={handleClick} />
     </group>
   );
 }
 
-function ToyCars() {
-  const positions = [
-    { x: 0, z: 1.9 },
-    { x: 0, z: -1.9 },
-    { x: 1.9, z: 0 },
-  ];
+const CAR_POSITIONS = [
+  { x: 0, z: 1.9 },
+  { x: 0, z: -1.9 },
+  { x: 1.9, z: 0 },
+];
 
+function ToyCars() {
   return (
     <>
-      {positions.map((pos, index) => (
+      {CAR_POSITIONS.map((pos, index) => (
         <SingleCar
           key={index}
           position={[pos.x, 0, pos.z]}
           rotation={[0, Math.random() * Math.PI * 2, 0]}
-          autoTriggerDelay={2000 + index * 1000} // Stagger each car by 1 second
+          autoTriggerDelay={BASE_AUTO_TRIGGER_DELAY + index * STAGGER_DELAY}
         />
       ))}
     </>

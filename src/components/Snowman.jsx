@@ -1,48 +1,70 @@
-import React, { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations, Clone } from '@react-three/drei';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { SkeletonUtils } from 'three-stdlib';
+
+const ANIMATION_INTERVAL = 5000;
+const BASE_AUTO_TRIGGER_DELAY = 4000;
+const STAGGER_DELAY = 1200;
+const SNOWMAN_SCALE = 0.15;
 
 function SingleSnowman({ position, rotation, autoTriggerDelay = 0 }) {
   const groupRef = useRef();
+  const mixerRef = useRef();
+  const actionRef = useRef();
   const gltf = useGLTF('/models/snowman/snow_man.glb');
-  const { actions, mixer } = useAnimations(gltf.animations, groupRef);
 
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  React.useEffect(() => {
-    if (actions && Object.keys(actions).length > 0) {
-      const action = Object.values(actions)[0];
-      if (action) {
-        action.paused = true;
-        action.loop = THREE.LoopOnce;
-        action.clampWhenFinished = true;
+  // Clone the scene with animations using SkeletonUtils
+  const clonedScene = useMemo(() => {
+    return SkeletonUtils.clone(gltf.scene);
+  }, [gltf.scene]);
+
+  // Initialize mixer and action
+  useEffect(() => {
+    if (clonedScene && gltf.animations && gltf.animations.length > 0) {
+      // Create a new mixer for the cloned scene
+      mixerRef.current = new THREE.AnimationMixer(clonedScene);
+
+      // Create action from the animation clip
+      const animationClip = gltf.animations[0];
+      actionRef.current = mixerRef.current.clipAction(animationClip);
+
+      if (actionRef.current) {
+        actionRef.current.paused = true;
+        actionRef.current.loop = THREE.LoopOnce;
+        actionRef.current.clampWhenFinished = true;
       }
     }
-  }, [actions]);
 
-  const playAnimation = useCallback(() => {
-    if (actions && Object.keys(actions).length > 0 && !isPlaying) {
-      const action = Object.values(actions)[0];
-      if (action) {
-        setIsPlaying(true);
-        action.reset();
-        action.paused = false;
-        action.play();
-
-        const onFinished = () => {
-          action.paused = true;
-          setIsPlaying(false);
-          mixer.removeEventListener('finished', onFinished);
-        };
-        mixer.addEventListener('finished', onFinished);
+    return () => {
+      if (mixerRef.current) {
+        mixerRef.current.stopAllAction();
       }
+    };
+  }, [clonedScene, gltf.animations]);
+
+  const playAnimation = () => {
+    if (actionRef.current && mixerRef.current && !isAnimating) {
+      setIsAnimating(true);
+      actionRef.current.reset();
+      actionRef.current.paused = false;
+      actionRef.current.play();
+
+      const onFinished = () => {
+        actionRef.current.paused = true;
+        setIsAnimating(false);
+        mixerRef.current.removeEventListener('finished', onFinished);
+      };
+      mixerRef.current.addEventListener('finished', onFinished);
     }
-  }, [actions, isPlaying, mixer]);
+  };
 
   // Auto-trigger animation at intervals
-  React.useEffect(() => {
-    if (!actions || Object.keys(actions).length === 0) return;
+  useEffect(() => {
+    if (!actionRef.current) return;
 
     let intervalId;
 
@@ -53,14 +75,14 @@ function SingleSnowman({ position, rotation, autoTriggerDelay = 0 }) {
       // Set up interval to repeat
       intervalId = setInterval(() => {
         playAnimation();
-      }, 7000); // Trigger every 7 seconds
+      }, ANIMATION_INTERVAL);
     }, autoTriggerDelay);
 
     return () => {
       clearTimeout(initialTimer);
       if (intervalId) clearInterval(intervalId);
     };
-  }, [actions, autoTriggerDelay, playAnimation]);
+  }, [autoTriggerDelay]);
 
   const handleClick = (event) => {
     event.stopPropagation();
@@ -68,31 +90,38 @@ function SingleSnowman({ position, rotation, autoTriggerDelay = 0 }) {
   };
 
   useFrame((state, delta) => {
-    if (mixer) mixer.update(delta);
+    if (mixerRef.current) {
+      mixerRef.current.update(delta);
+    }
   });
 
   return (
-    <group ref={groupRef} position={position} rotation={rotation}>
-      <Clone object={gltf.scene} scale={0.15} onClick={handleClick} />
+    <group
+      ref={groupRef}
+      position={position}
+      rotation={rotation}
+      scale={[SNOWMAN_SCALE, SNOWMAN_SCALE, SNOWMAN_SCALE]}
+    >
+      <primitive object={clonedScene} onClick={handleClick} />
     </group>
   );
 }
 
-function Snowmen() {
-  const positions = [
-    { x: -1.5, z: 1.5 },
-    { x: 1.5, z: -1.5 },
-    { x: -1.5, z: -1.5 },
-  ];
+const SNOWMAN_POSITIONS = [
+  { x: -1.5, z: 1.5 },
+  { x: 1.5, z: -1.5 },
+  { x: -1.5, z: -1.5 },
+];
 
+function Snowmen() {
   return (
     <>
-      {positions.map((pos, index) => (
+      {SNOWMAN_POSITIONS.map((pos, index) => (
         <SingleSnowman
           key={index}
           position={[pos.x, 0.1, pos.z]}
           rotation={[0, Math.random() * Math.PI * 2, 0]}
-          autoTriggerDelay={4000 + index * 1200} // Stagger each snowman by 1.2 seconds
+          autoTriggerDelay={BASE_AUTO_TRIGGER_DELAY + index * STAGGER_DELAY}
         />
       ))}
     </>
